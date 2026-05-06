@@ -1,0 +1,36 @@
+{
+  "name": "app-attendance",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Asistencia con QR — monorepo (app móvil Ionic React + API Express + Mongo + SCORM Moodle).",
+  "scripts": {
+    "install:all": "npm install && npm --prefix back install && npm --prefix app install",
+    "dev:back": "npm --prefix back run dev",
+    "dev:app": "npm --prefix app run dev",
+    "build:back": "npm --prefix back run build",
+    "build:app": "npm --prefix app run build",
+    "lint": "npm --prefix back run lint && npm --prefix app run lint",
+    "typecheck": "npm --prefix back run typecheck && npm --prefix app run typecheck",
+    "test": "npm --prefix back test --if-present && npm --prefix app test --if-present",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:seed": "docker compose exec api node dist/seed.js",
+    "scorm:zip": "node scorm/scripts/build-zip.cjs"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "keywords": [
+    "asistencia",
+    "qr",
+    "ionic-react",
+    "express",
+    "mongodb",
+    "scorm",
+    "moodle"
+  ],
+  "author": "BrandowC",
+  "license": "UNLICENSED"
+}

@@ -1,0 +1,60 @@
+# Dependencies
+node_modules/
+**/node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+**/dist/
+**/build/
+.vite/
+.next/
+out/
+
+# Capacitor / mobile
+android/
+ios/
+**/android/app/build/
+**/ios/App/build/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Test / coverage
+coverage/
+.nyc_output/
+
+# Cache
+.cache/
+.parcel-cache/
+.turbo/
+
+# Docker / DB volumes
+data/
+mongo-data/
+**/mongo-data/
+
+# SCORM packaging artifacts
+*.zip
+!docs/assets/*.zip
+
+# TypeScript
+*.tsbuildinfo
