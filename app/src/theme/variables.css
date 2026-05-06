@@ -1,0 +1,59 @@
+:root {
+  --ion-color-primary: #2563eb;
+  --ion-color-primary-rgb: 37, 99, 235;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #2057cf;
+  --ion-color-primary-tint: #3a72ed;
+
+  --ion-color-secondary: #0ea5e9;
+  --ion-color-secondary-rgb: 14, 165, 233;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #0c91cd;
+  --ion-color-secondary-tint: #26aeeb;
+
+  --ion-color-success: #16a34a;
+  --ion-color-success-rgb: 22, 163, 74;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+
+  --ion-color-warning: #f59e0b;
+  --ion-color-warning-rgb: 245, 158, 11;
+
+  --ion-color-danger: #dc2626;
+  --ion-color-danger-rgb: 220, 38, 38;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+}
+
+.qr-card {
+  text-align: center;
+  padding: 16px;
+}
+.qr-card img {
+  max-width: 280px;
+  width: 100%;
+  height: auto;
+}
+.room-code {
+  font-family: 'Courier New', monospace;
+  font-size: 2.4rem;
+  letter-spacing: 0.4rem;
+  font-weight: 700;
+  text-align: center;
+  background: rgba(var(--ion-color-primary-rgb), 0.1);
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin: 12px auto;
+  display: inline-block;
+}
+.muted {
+  color: var(--ion-color-medium);
+  font-size: 0.85rem;
+}
+.public-attendance {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
