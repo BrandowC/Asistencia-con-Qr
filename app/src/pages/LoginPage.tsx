@@ -1,20 +1,4 @@
-import {
-  IonButton,
-  IonContent,
-  IonHeader,
-  IonIcon,
-  IonInput,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonNote,
-  IonPage,
-  IonText,
-  IonTitle,
-  IonToolbar,
-  IonSpinner,
-} from '@ionic/react';
-import { logInOutline, settingsOutline } from 'ionicons/icons';
+import { IonContent, IonHeader, IonPage, IonSpinner, IonTitle, IonToolbar } from '@ionic/react';
 import { useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { api } from '../api/client';
@@ -61,73 +45,68 @@ export default function LoginPage() {
           <IonTitle>Asistencia con QR</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding fade-in">
-        <form onSubmit={handleSubmit}>
-          <div className="welcome-card">
-            <h2>Bienvenido</h2>
-            <p>Ingresa con tu cuenta de docente o instructor para continuar.</p>
-          </div>
+      <IonContent fullscreen>
+        <div className="login-shell">
+          <form className="login-card" onSubmit={handleSubmit} autoComplete="on">
+            <h1>Acceso al sistema</h1>
+            <p className="subtitle">Ingresa con tu cuenta de docente o instructor.</p>
 
-          <IonList inset className="slide-up">
-            <IonItem>
-              <IonLabel position="stacked">Documento</IonLabel>
-              <IonInput
+            <div className="field">
+              <label htmlFor="documento">Documento</label>
+              <input
+                id="documento"
+                name="documento"
+                type="text"
                 value={documento}
-                onIonInput={(e) => setDocumento(String(e.detail.value ?? ''))}
+                onChange={(e) => setDocumento(e.target.value)}
                 placeholder="Tu documento"
+                autoComplete="username"
+                autoFocus
                 required
-                autocomplete="username"
               />
-            </IonItem>
-            <IonItem>
-              <IonLabel position="stacked">Contraseña</IonLabel>
-              <IonInput
+            </div>
+
+            <div className="field">
+              <label htmlFor="password">Contraseña</label>
+              <input
+                id="password"
+                name="password"
                 type="password"
                 value={password}
-                onIonInput={(e) => setPassword(String(e.detail.value ?? ''))}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
+                autoComplete="current-password"
                 required
-                autocomplete="current-password"
               />
-            </IonItem>
-            <IonItem>
-              <IonLabel position="stacked">Código de la institución (opcional)</IonLabel>
-              <IonInput
+            </div>
+
+            <div className="field">
+              <label htmlFor="institutionCode">Código de institución (opcional)</label>
+              <input
+                id="institutionCode"
+                name="institutionCode"
+                type="text"
                 value={institutionCode}
-                onIonInput={(e) => setInstitutionCode(String(e.detail.value ?? ''))}
+                onChange={(e) => setInstitutionCode(e.target.value)}
                 placeholder="Solo si tu documento se repite entre instituciones"
               />
-            </IonItem>
-          </IonList>
+            </div>
 
-          {error ? (
-            <IonText color="danger" className="ion-padding-start slide-up">
-              <p>{error}</p>
-            </IonText>
-          ) : null}
+            {error ? <div className="error-msg">{error}</div> : null}
 
-          <div className="ion-padding slide-up">
-            <IonButton type="submit" expand="block" disabled={loading}>
-              {loading ? (
-                <IonSpinner name="dots" />
-              ) : (
-                <>
-                  <IonIcon slot="start" icon={logInOutline} />
-                  Iniciar sesión
-                </>
-              )}
-            </IonButton>
-            <IonButton expand="block" fill="clear" routerLink="/settings">
-              <IonIcon slot="start" icon={settingsOutline} />
+            <button type="submit" className="submit" disabled={loading}>
+              {loading ? <IonSpinner name="dots" /> : 'Iniciar sesión'}
+            </button>
+
+            <a className="helper-link" onClick={(e) => { e.preventDefault(); history.push('/settings'); }} href="/settings">
               Configurar URL del backend
-            </IonButton>
-          </div>
+            </a>
 
-          <IonNote className="ion-padding-start">
-            ¿Aún no tienes una cuenta? El administrador del sistema debe crearla desde la sección de
-            gestión.
-          </IonNote>
-        </form>
+            <p className="footer-note">
+              ¿No tienes cuenta? Pídele al administrador que te cree el usuario desde la sección de Gestión.
+            </p>
+          </form>
+        </div>
       </IonContent>
     </IonPage>
   );
