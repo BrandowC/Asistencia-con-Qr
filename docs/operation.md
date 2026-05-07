@@ -54,16 +54,28 @@ npm run dev:app
 
 Modo producción (servido por nginx en el contenedor `app`): `http://localhost:8080`.
 
-## Datos demo
+## Bootstrap inicial
 
-Tras `npm run docker:seed` quedan disponibles:
+`npm run docker:seed` solo crea lo mínimo para entrar al sistema:
 
-| Documento     | Password   | Institución | Rol         |
-| ------------- | ---------- | ----------- | ----------- |
-| `DOC-DEMO-001`| `Demo.2025`| `SENA-DEMO` | INSTRUCTOR  |
-| `DOC-DEMO-002`| `Demo.2025`| `UNI-DEMO`  | DOCENTE     |
+- Una **institución inicial** (código `INST-001` por defecto, configurable en `.env`).
+- Un único **usuario ADMIN** (documento `admin`, password `cambiar-en-primer-login` por defecto, configurable en `.env`).
+- Permisos por rol.
 
-Estudiantes/aprendices: `EST-DEMO-001..006`, `APR-DEMO-001..008` (sin password).
+Con esa cuenta entras y desde la sección **Gestión** (icono ⚙ del dashboard) creas tus instituciones, unidades académicas, personas e inscripciones reales.
+
+Para personalizar el bootstrap edita estas variables en `.env` antes del primer seed:
+
+```env
+BOOTSTRAP_INSTITUTION_CODE=UNI-MIA
+BOOTSTRAP_INSTITUTION_NAME=Mi Universidad
+BOOTSTRAP_INSTITUTION_CONTEXT=UNIVERSIDAD   # o SENA
+ADMIN_DOCUMENTO=cc-1234567
+ADMIN_NOMBRE=Tu Nombre
+ADMIN_PASSWORD=algo-fuerte-aqui
+```
+
+> El seed es idempotente: si vuelves a correrlo no duplica nada, solo se asegura de que admin e institución existan.
 
 ## Detener todo
 

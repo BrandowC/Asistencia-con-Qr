@@ -25,11 +25,12 @@
 ## Checklist de demostración
 
 - [ ] Levantar Docker (`npm run docker:up`) y validar `/health` y `/ready`.
-- [ ] Sembrar datos demo (`npm run docker:seed`).
+- [ ] Bootstrap inicial (`npm run docker:seed`).
 - [ ] Abrir la app (`npm run dev:app`) y configurar URL del backend si hace falta.
-- [ ] Login con `DOC-DEMO-001` / `Demo.2025` (`SENA-DEMO`).
-- [ ] Seleccionar institución y unidad demo.
-- [ ] Generar sesión QR, registrar al menos un estudiante (`APR-DEMO-001`).
-- [ ] Mostrar presentes, ausentes y un rechazo (intentar registrar `APR-DEMO-001` dos veces → `DUPLICATE`).
+- [ ] Login con el ADMIN del bootstrap (documento y password definidos en `.env`).
+- [ ] En la sección **Gestión**: crear institución, unidades y al menos 3 estudiantes.
+- [ ] Volver al dashboard, seleccionar institución y unidad recién creadas.
+- [ ] Generar sesión QR y registrar asistencia desde otra pestaña.
+- [ ] Mostrar presentes, ausentes y un rechazo (intentar registrar el mismo documento dos veces → `DUPLICATE`).
 - [ ] Cerrar sesión y mostrar historial.
 - [ ] Mostrar el paquete SCORM en Moodle (o abrir `scorm/index.html` en navegador).

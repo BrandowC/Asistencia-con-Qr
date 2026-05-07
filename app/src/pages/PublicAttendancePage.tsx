@@ -92,7 +92,7 @@ export default function PublicAttendancePage() {
                   <IonInput
                     value={documento}
                     onIonInput={(e) => setDocumento(String(e.detail.value ?? ''))}
-                    placeholder="EST-DEMO-001"
+                    placeholder="Tu documento"
                     required
                     disabled={status === 'submitting'}
                   />

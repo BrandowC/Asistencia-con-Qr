@@ -17,9 +17,9 @@ Base URL local: `http://localhost:4000`.
 
 ```json
 {
-  "documento": "DOC-DEMO-001",
-  "password": "Demo.2025",
-  "institutionCode": "SENA-DEMO"
+  "documento": "<documento del usuario>",
+  "password": "<password>",
+  "institutionCode": "<opcional>"
 }
 ```
 
@@ -27,25 +27,40 @@ Base URL local: `http://localhost:4000`.
 ```json
 {
   "data": {
-    "token": "<jwt-demo>",
+    "token": "<jwt>",
     "person": {
       "id": "<object-id>",
       "institutionId": "<object-id>",
-      "nombre": "Instructor Demo",
-      "documento": "DOC-DEMO-001",
+      "nombre": "<Nombre>",
+      "documento": "<documento>",
       "roles": ["INSTRUCTOR"]
     }
   }
 }
 ```
 
-## Catálogo
+## Catálogo y gestión
 
-| Método | Ruta                                      | Auth | Descripción                                |
-| ------ | ----------------------------------------- | ---- | ------------------------------------------ |
-| GET    | `/api/institutions`                       | Sí   | Lista de instituciones activas.            |
-| GET    | `/api/units?institutionId=...`            | Sí   | Lista de unidades académicas activas.      |
-| GET    | `/api/units/:unitId/enrollments`          | Sí   | Inscritos vigentes en la unidad.           |
+| Método | Ruta                                      | Auth        | Descripción                                |
+| ------ | ----------------------------------------- | ----------- | ------------------------------------------ |
+| GET    | `/api/institutions`                       | Sí          | Lista de instituciones activas.            |
+| POST   | `/api/institutions`                       | ADMIN       | Crea institución.                          |
+| PATCH  | `/api/institutions/:id`                   | ADMIN       | Actualiza institución.                     |
+| DELETE | `/api/institutions/:id`                   | ADMIN       | Desactiva institución (borrado lógico).    |
+| GET    | `/api/units?institutionId=...`            | Sí          | Lista unidades académicas activas.         |
+| POST   | `/api/units`                              | Staff       | Crea unidad académica.                     |
+| PATCH  | `/api/units/:id`                          | Staff       | Actualiza unidad académica.                |
+| DELETE | `/api/units/:id`                          | Staff       | Desactiva unidad académica.                |
+| GET    | `/api/units/:unitId/enrollments`          | Sí          | Inscritos vigentes en la unidad.           |
+| GET    | `/api/people?institutionId=&role=&q=`     | Staff       | Lista personas (búsqueda parcial).         |
+| POST   | `/api/people`                             | Staff       | Crea persona (con roles e inscripciones).  |
+| PATCH  | `/api/people/:id`                         | Staff       | Actualiza persona.                         |
+| DELETE | `/api/people/:id`                         | Staff       | Desactiva persona y sus inscripciones.     |
+| DELETE | `/api/people/:id/hard`                    | Staff       | Borrado físico (solo si no tiene records). |
+| POST   | `/api/enrollments`                        | Staff       | Inscribe persona en unidad.                |
+| DELETE | `/api/enrollments/:id`                    | Staff       | Retira inscripción (lógico).               |
+
+> *Staff*: ADMIN, DOCENTE o INSTRUCTOR.
 
 ## Sesiones (rol ADMIN, DOCENTE o INSTRUCTOR)
 
