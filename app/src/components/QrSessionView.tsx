@@ -1,4 +1,16 @@
-import { IonBadge, IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonText } from '@ionic/react';
+import {
+  IonBadge,
+  IonButton,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
+  IonCardSubtitle,
+  IonCardTitle,
+  IonIcon,
+  IonText,
+  useIonToast,
+} from '@ionic/react';
+import { closeCircleOutline, copyOutline, refreshOutline } from 'ionicons/icons';
 import { useEffect, useState } from 'react';
 import type { AttendanceSession } from '../api/types';
 
@@ -19,17 +31,31 @@ function formatRemaining(target: string | null): string {
 
 export default function QrSessionView({ session, onRotateRoom, onClose }: Props) {
   const [, force] = useState(0);
+  const [present] = useIonToast();
   useEffect(() => {
     const id = setInterval(() => force((n) => n + 1), 1000);
     return () => clearInterval(id);
   }, []);
 
+  async function copyUrl() {
+    if (!session.qrUrl) return;
+    try {
+      await navigator.clipboard.writeText(session.qrUrl);
+      void present({ message: 'Enlace copiado', duration: 1400, color: 'success', position: 'bottom' });
+    } catch {
+      void present({ message: 'No se pudo copiar', duration: 1400, color: 'danger', position: 'bottom' });
+    }
+  }
+
   return (
-    <IonCard>
+    <IonCard className="slide-up">
       <IonCardHeader>
         <IonCardTitle>Sesión QR</IonCardTitle>
         <IonCardSubtitle>
-          Estado: <IonBadge color={session.status === 'ACTIVE' ? 'success' : 'medium'}>{session.status}</IonBadge>
+          Estado:{' '}
+          <IonBadge color={session.status === 'ACTIVE' ? 'success' : 'medium'}>
+            {session.status}
+          </IonBadge>
         </IonCardSubtitle>
       </IonCardHeader>
       <IonCardContent>
@@ -40,28 +66,36 @@ export default function QrSessionView({ session, onRotateRoom, onClose }: Props)
             <p className="muted">Activa la sesión para generar el QR.</p>
           )}
           {session.qrUrl ? (
-            <p className="muted" style={{ wordBreak: 'break-all' }}>
-              {session.qrUrl}
-            </p>
+            <div>
+              <span className="session-url">{session.qrUrl}</span>
+              <br />
+              <span className="copy-link" onClick={copyUrl}>
+                <IonIcon icon={copyOutline} /> Copiar enlace
+              </span>
+            </div>
           ) : null}
         </div>
 
         <IonText>
-          <h3>Código de sala</h3>
+          <h3 style={{ textAlign: 'center', marginTop: 16 }}>Código de sala</h3>
         </IonText>
         <div style={{ textAlign: 'center' }}>
           <span className="room-code">{session.roomCode ?? '—'}</span>
-          <p className="muted">Expira en {formatRemaining(session.roomCodeExpiresAt)}</p>
+          <p className="muted">Renueva en {formatRemaining(session.roomCodeExpiresAt)}</p>
         </div>
 
         <IonText>
-          <p className="muted">QR vence: {formatRemaining(session.qrExpiresAt)}</p>
+          <p className="muted" style={{ textAlign: 'center' }}>
+            QR vence en <strong>{formatRemaining(session.qrExpiresAt)}</strong>
+          </p>
         </IonText>
 
         <IonButton expand="block" onClick={onRotateRoom} fill="outline" disabled={session.status !== 'ACTIVE'}>
+          <IonIcon slot="start" icon={refreshOutline} />
           Rotar código de sala
         </IonButton>
         <IonButton expand="block" color="danger" onClick={onClose} disabled={session.status === 'CLOSED'}>
+          <IonIcon slot="start" icon={closeCircleOutline} />
           Cerrar sesión
         </IonButton>
       </IonCardContent>

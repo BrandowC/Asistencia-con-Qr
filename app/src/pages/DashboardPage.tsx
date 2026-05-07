@@ -6,23 +6,34 @@ import {
   IonCardContent,
   IonCardHeader,
   IonCardTitle,
+  IonChip,
   IonContent,
   IonHeader,
+  IonIcon,
   IonItem,
   IonLabel,
   IonList,
   IonListHeader,
   IonNote,
   IonPage,
+  IonRefresher,
+  IonRefresherContent,
   IonSelect,
   IonSelectOption,
   IonSpinner,
   IonText,
   IonTitle,
   IonToolbar,
-  IonRefresher,
-  IonRefresherContent,
+  useIonToast,
 } from '@ionic/react';
+import {
+  documentTextOutline,
+  logOutOutline,
+  qrCodeOutline,
+  schoolOutline,
+  settingsSharp,
+  trashOutline,
+} from 'ionicons/icons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { RefresherEventDetail } from '@ionic/core';
 import { useHistory } from 'react-router-dom';
@@ -43,6 +54,7 @@ import AttendancePanels from '../components/AttendancePanels';
 export default function DashboardPage() {
   const { person, clearSession } = useAuth();
   const history = useHistory();
+  const [present] = useIonToast();
 
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [units, setUnits] = useState<AcademicUnit[]>([]);
@@ -53,7 +65,7 @@ export default function DashboardPage() {
   const [unitId, setUnitId] = useState<string>('');
 
   const [session, setSession] = useState<AttendanceSession | null>(null);
-  const [present, setPresent] = useState<PresentRecord[]>([]);
+  const [presentList, setPresent] = useState<PresentRecord[]>([]);
   const [absent, setAbsent] = useState<AbsentRecord[]>([]);
   const [rejections, setRejections] = useState<RejectionRecord[]>([]);
 
@@ -62,6 +74,11 @@ export default function DashboardPage() {
   const [loadingEnrollments, setLoadingEnrollments] = useState(false);
   const [creatingSession, setCreatingSession] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmUnenroll, setConfirmUnenroll] = useState<EnrolledPerson | null>(null);
+
+  function notify(message: string, color: 'success' | 'danger' | 'medium' = 'success') {
+    void present({ message, duration: 1800, color, position: 'bottom' });
+  }
 
   useEffect(() => {
     api
@@ -89,17 +106,28 @@ export default function DashboardPage() {
       .finally(() => setLoadingUnits(false));
   }, [institutionId]);
 
-  useEffect(() => {
+  const loadEnrollmentsAndHistory = useCallback(async () => {
     if (!unitId) return;
     setLoadingEnrollments(true);
-    Promise.all([api.getEnrollments(unitId), api.getSessionsByUnit(unitId)])
-      .then(([list, history]) => {
-        setEnrollments(list);
-        setHistory(history);
-      })
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Error cargando inscritos'))
-      .finally(() => setLoadingEnrollments(false));
+    try {
+      const [list, hist] = await Promise.all([api.getEnrollments(unitId), api.getSessionsByUnit(unitId)]);
+      setEnrollments(list);
+      setHistory(hist);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error cargando inscritos');
+    } finally {
+      setLoadingEnrollments(false);
+    }
   }, [unitId]);
+
+  useEffect(() => {
+    if (!unitId) {
+      setEnrollments([]);
+      setHistory([]);
+      return;
+    }
+    loadEnrollmentsAndHistory();
+  }, [unitId, loadEnrollmentsAndHistory]);
 
   const refreshResults = useCallback(async () => {
     if (!session) return;
@@ -132,6 +160,7 @@ export default function DashboardPage() {
       setPresent([]);
       setAbsent([]);
       setRejections([]);
+      notify('Sesión QR activada');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error creando sesión');
     } finally {
@@ -144,6 +173,7 @@ export default function DashboardPage() {
     try {
       const r = await api.rotateRoomCode(session.id);
       setSession({ ...session, roomCode: r.roomCode, roomCodeExpiresAt: r.roomCodeExpiresAt });
+      notify('Código de sala renovado');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error rotando código');
     }
@@ -155,13 +185,28 @@ export default function DashboardPage() {
       const updated = await api.closeSession(session.id);
       setSession({ ...session, ...updated });
       await refreshResults();
+      notify('Sesión cerrada', 'medium');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error cerrando sesión');
     }
   }
 
+  async function handleUnenrollConfirmed() {
+    if (!confirmUnenroll?.enrollmentId) return;
+    try {
+      await api.unenroll(confirmUnenroll.enrollmentId);
+      notify(`${confirmUnenroll.nombre} fue retirado de la unidad`);
+      await loadEnrollmentsAndHistory();
+      await refreshResults();
+    } catch (e) {
+      notify(e instanceof Error ? e.message : 'No se pudo retirar al estudiante', 'danger');
+    } finally {
+      setConfirmUnenroll(null);
+    }
+  }
+
   function handleRefresh(event: CustomEvent<RefresherEventDetail>) {
-    refreshResults().finally(() => event.detail.complete());
+    Promise.all([refreshResults(), loadEnrollmentsAndHistory()]).finally(() => event.detail.complete());
   }
 
   function logout() {
@@ -170,6 +215,12 @@ export default function DashboardPage() {
   }
 
   const selectedUnit = useMemo(() => units.find((u) => u.id === unitId), [units, unitId]);
+  const selectedInstitution = useMemo(
+    () => institutions.find((i) => i.id === institutionId),
+    [institutions, institutionId],
+  );
+  const aprendizLabel = selectedInstitution?.labels?.aprendiz ?? 'Estudiante';
+  const unidadLabel = selectedInstitution?.labels?.unidad ?? 'Unidad académica';
 
   return (
     <IonPage>
@@ -177,23 +228,32 @@ export default function DashboardPage() {
         <IonToolbar color="primary">
           <IonTitle>Asistencia con QR</IonTitle>
           <IonButtons slot="end">
-            <IonButton onClick={logout}>Salir</IonButton>
+            <IonButton routerLink="/manage" title="Gestión">
+              <IonIcon slot="icon-only" icon={settingsSharp} />
+            </IonButton>
+            <IonButton onClick={logout} title="Cerrar sesión">
+              <IonIcon slot="icon-only" icon={logOutOutline} />
+            </IonButton>
           </IonButtons>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding">
+      <IonContent className="ion-padding fade-in">
         <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
           <IonRefresherContent />
         </IonRefresher>
 
-        <IonText>
+        <div className="welcome-card">
           <h2>Hola, {person?.nombre}</h2>
-          <p className="muted">Documento: {person?.documento} · Roles: {person?.roles.join(', ')}</p>
-        </IonText>
+          <p>
+            {person?.documento} · {person?.roles.join(', ')}
+          </p>
+        </div>
 
-        <IonCard>
+        <IonCard className="slide-up">
           <IonCardHeader>
-            <IonCardTitle>1. Selección académica</IonCardTitle>
+            <IonCardTitle>
+              <IonIcon icon={schoolOutline} /> 1. Selecciona contexto académico
+            </IonCardTitle>
           </IonCardHeader>
           <IonCardContent>
             <IonItem>
@@ -212,7 +272,7 @@ export default function DashboardPage() {
             </IonItem>
 
             <IonItem>
-              <IonLabel position="stacked">Unidad académica (ficha o materia)</IonLabel>
+              <IonLabel position="stacked">{unidadLabel}</IonLabel>
               <IonSelect
                 placeholder={loadingUnits ? 'Cargando…' : 'Seleccionar'}
                 value={unitId}
@@ -226,27 +286,57 @@ export default function DashboardPage() {
                 ))}
               </IonSelect>
             </IonItem>
+
+            {institutions.length === 0 && !loadingInstitutions ? (
+              <div className="empty-state">
+                <IonIcon icon={schoolOutline} />
+                <p>No hay instituciones todavía.</p>
+                <IonButton size="small" routerLink="/manage">Crear la primera</IonButton>
+              </div>
+            ) : null}
           </IonCardContent>
         </IonCard>
 
         {selectedUnit ? (
-          <IonCard>
+          <IonCard className="slide-up">
             <IonCardHeader>
-              <IonCardTitle>2. Inscritos en {selectedUnit.code}</IonCardTitle>
+              <IonCardTitle>
+                2. Inscritos en {selectedUnit.code}
+                <IonChip color="primary" style={{ marginLeft: 8 }}>
+                  {enrollments.length} {aprendizLabel.toLowerCase()}{enrollments.length === 1 ? '' : 's'}
+                </IonChip>
+              </IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
               {loadingEnrollments ? (
-                <IonSpinner />
+                <div className="skeleton-stack">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="skeleton-row" />
+                  ))}
+                </div>
               ) : enrollments.length === 0 ? (
-                <IonNote>Sin inscritos.</IonNote>
+                <div className="empty-state">
+                  <p>No hay {aprendizLabel.toLowerCase()}s inscritos.</p>
+                  <IonButton size="small" fill="outline" routerLink="/manage">Inscribir desde gestión</IonButton>
+                </div>
               ) : (
                 <IonList>
                   {enrollments.map((p) => (
-                    <IonItem key={p.id}>
+                    <IonItem key={p.id} className="list-item-pop">
                       <IonLabel>
                         <h3>{p.nombre}</h3>
-                        <small className="muted">{p.documento}</small>
+                        <small className="muted">{p.documento}{p.matricula ? ` · ${p.matricula}` : ''}</small>
                       </IonLabel>
+                      {p.enrollmentId ? (
+                        <IonButton
+                          slot="end"
+                          fill="clear"
+                          color="danger"
+                          onClick={() => setConfirmUnenroll(p)}
+                        >
+                          <IonIcon icon={trashOutline} />
+                        </IonButton>
+                      ) : null}
                     </IonItem>
                   ))}
                 </IonList>
@@ -254,9 +344,17 @@ export default function DashboardPage() {
               <IonButton
                 expand="block"
                 onClick={startSession}
-                disabled={!unitId || creatingSession || (session?.status === 'ACTIVE')}
+                disabled={!unitId || creatingSession || session?.status === 'ACTIVE' || enrollments.length === 0}
+                className="ion-margin-top"
               >
-                {creatingSession ? <IonSpinner name="dots" /> : 'Iniciar sesión QR'}
+                {creatingSession ? (
+                  <IonSpinner name="dots" />
+                ) : (
+                  <>
+                    <IonIcon slot="start" icon={qrCodeOutline} />
+                    Iniciar sesión QR
+                  </>
+                )}
               </IonButton>
             </IonCardContent>
           </IonCard>
@@ -264,22 +362,26 @@ export default function DashboardPage() {
 
         {session ? (
           <>
-            <QrSessionView session={session} onRotateRoom={handleRotateRoom} onClose={handleClose} />
-            <IonCard>
+            <div className={session.status === 'ACTIVE' ? 'pulse-active' : ''}>
+              <QrSessionView session={session} onRotateRoom={handleRotateRoom} onClose={handleClose} />
+            </div>
+            <IonCard className="slide-up">
               <IonCardHeader>
-                <IonCardTitle>3. Resultados</IonCardTitle>
+                <IonCardTitle>3. Resultados en vivo</IonCardTitle>
               </IonCardHeader>
               <IonCardContent>
-                <AttendancePanels present={present} absent={absent} rejections={rejections} />
+                <AttendancePanels present={presentList} absent={absent} rejections={rejections} />
               </IonCardContent>
             </IonCard>
           </>
         ) : null}
 
         {history_.length > 0 ? (
-          <IonCard>
+          <IonCard className="slide-up">
             <IonCardHeader>
-              <IonCardTitle>Historial reciente</IonCardTitle>
+              <IonCardTitle>
+                <IonIcon icon={documentTextOutline} /> Historial reciente
+              </IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
               <IonList>
@@ -287,11 +389,25 @@ export default function DashboardPage() {
                   <IonLabel>Sesiones de la unidad</IonLabel>
                 </IonListHeader>
                 {history_.slice(0, 10).map((s) => (
-                  <IonItem key={s.id}>
+                  <IonItem key={s.id} className="list-item-pop">
                     <IonLabel>
-                      <h3>{s.status}</h3>
+                      <h3>
+                        <IonChip
+                          color={
+                            s.status === 'ACTIVE'
+                              ? 'success'
+                              : s.status === 'CLOSED'
+                                ? 'medium'
+                                : s.status === 'EXPIRED'
+                                  ? 'warning'
+                                  : 'primary'
+                          }
+                        >
+                          {s.status}
+                        </IonChip>
+                      </h3>
                       <small className="muted">
-                        {s.activatedAt ? new Date(s.activatedAt).toLocaleString() : '—'}
+                        {s.activatedAt ? new Date(s.activatedAt).toLocaleString() : 'No activada'}
                       </small>
                     </IonLabel>
                   </IonItem>
@@ -301,12 +417,34 @@ export default function DashboardPage() {
           </IonCard>
         ) : null}
 
+        {(!institutions.length || !units.length) && !loadingInstitutions && !loadingUnits ? (
+          <IonNote className="ion-padding-start">
+            <IonText>
+              <p>
+                Si es la primera vez que usas el sistema, ve a <strong>Gestión</strong> (icono de
+                engranaje, arriba a la derecha) para crear instituciones, unidades y personas.
+              </p>
+            </IonText>
+          </IonNote>
+        ) : null}
+
         <IonAlert
           isOpen={!!error}
           header="Error"
           message={error ?? ''}
           buttons={[{ text: 'OK', handler: () => setError(null) }]}
           onDidDismiss={() => setError(null)}
+        />
+
+        <IonAlert
+          isOpen={!!confirmUnenroll}
+          header="Retirar estudiante"
+          message={`¿Retirar a ${confirmUnenroll?.nombre} (${confirmUnenroll?.documento}) de esta unidad? La persona seguirá existiendo en el sistema, pero ya no figurará como inscrita aquí.`}
+          buttons={[
+            { text: 'Cancelar', role: 'cancel', handler: () => setConfirmUnenroll(null) },
+            { text: 'Retirar', role: 'destructive', handler: handleUnenrollConfirmed },
+          ]}
+          onDidDismiss={() => setConfirmUnenroll(null)}
         />
       </IonContent>
     </IonPage>

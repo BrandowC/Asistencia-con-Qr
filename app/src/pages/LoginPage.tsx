@@ -2,6 +2,7 @@ import {
   IonButton,
   IonContent,
   IonHeader,
+  IonIcon,
   IonInput,
   IonItem,
   IonLabel,
@@ -13,6 +14,7 @@ import {
   IonToolbar,
   IonSpinner,
 } from '@ionic/react';
+import { logInOutline, settingsOutline } from 'ionicons/icons';
 import { useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { api } from '../api/client';
@@ -46,7 +48,7 @@ export default function LoginPage() {
       const target = location.state?.from?.pathname ?? '/dashboard';
       history.replace(target);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+      setError(err instanceof Error ? err.message : 'No se pudo iniciar sesión.');
     } finally {
       setLoading(false);
     }
@@ -59,21 +61,22 @@ export default function LoginPage() {
           <IonTitle>Asistencia con QR</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding">
+      <IonContent className="ion-padding fade-in">
         <form onSubmit={handleSubmit}>
-          <IonText>
-            <h2>Inicio de sesión</h2>
-            <p className="muted">Ingresa con tu cuenta de docente o instructor.</p>
-          </IonText>
+          <div className="welcome-card">
+            <h2>Bienvenido</h2>
+            <p>Ingresa con tu cuenta de docente o instructor para continuar.</p>
+          </div>
 
-          <IonList inset>
+          <IonList inset className="slide-up">
             <IonItem>
               <IonLabel position="stacked">Documento</IonLabel>
               <IonInput
                 value={documento}
                 onIonInput={(e) => setDocumento(String(e.detail.value ?? ''))}
-                placeholder="DOC-DEMO-001"
+                placeholder="Tu documento"
                 required
+                autocomplete="username"
               />
             </IonItem>
             <IonItem>
@@ -82,38 +85,47 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onIonInput={(e) => setPassword(String(e.detail.value ?? ''))}
-                placeholder="********"
+                placeholder="••••••••"
                 required
+                autocomplete="current-password"
               />
             </IonItem>
             <IonItem>
-              <IonLabel position="stacked">Código institución (opcional)</IonLabel>
+              <IonLabel position="stacked">Código de la institución (opcional)</IonLabel>
               <IonInput
                 value={institutionCode}
                 onIonInput={(e) => setInstitutionCode(String(e.detail.value ?? ''))}
-                placeholder="SENA-DEMO o UNI-DEMO"
+                placeholder="Solo si tu documento se repite entre instituciones"
               />
             </IonItem>
           </IonList>
 
           {error ? (
-            <IonNote color="danger" className="ion-padding-start">
-              {error}
-            </IonNote>
+            <IonText color="danger" className="ion-padding-start slide-up">
+              <p>{error}</p>
+            </IonText>
           ) : null}
 
-          <div className="ion-padding">
+          <div className="ion-padding slide-up">
             <IonButton type="submit" expand="block" disabled={loading}>
-              {loading ? <IonSpinner name="dots" /> : 'Iniciar sesión'}
+              {loading ? (
+                <IonSpinner name="dots" />
+              ) : (
+                <>
+                  <IonIcon slot="start" icon={logInOutline} />
+                  Iniciar sesión
+                </>
+              )}
             </IonButton>
             <IonButton expand="block" fill="clear" routerLink="/settings">
+              <IonIcon slot="start" icon={settingsOutline} />
               Configurar URL del backend
             </IonButton>
           </div>
 
           <IonNote className="ion-padding-start">
-            Usuarios demo: <code>DOC-DEMO-001</code> (SENA-DEMO) o <code>DOC-DEMO-002</code> (UNI-DEMO),
-            password <code>Demo.2025</code>.
+            ¿Aún no tienes una cuenta? El administrador del sistema debe crearla desde la sección de
+            gestión.
           </IonNote>
         </form>
       </IonContent>
