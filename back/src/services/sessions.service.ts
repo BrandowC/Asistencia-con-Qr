@@ -143,13 +143,13 @@ export function serializeSession(session: {
   institutionId: unknown;
   unitId: unknown;
   status: SessionStatus;
-  qrToken: string | null;
-  qrExpiresAt: Date | null;
-  roomCode: string | null;
-  roomCodeExpiresAt: Date | null;
-  activatedAt: Date | null;
-  closedAt: Date | null;
-  notes: string;
+  qrToken?: string | null;
+  qrExpiresAt?: Date | null;
+  roomCode?: string | null;
+  roomCodeExpiresAt?: Date | null;
+  activatedAt?: Date | null;
+  closedAt?: Date | null;
+  notes?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }) {
@@ -158,13 +158,13 @@ export function serializeSession(session: {
     institutionId: String(session.institutionId),
     unitId: String(session.unitId),
     status: session.status,
-    qrToken: session.qrToken,
-    qrExpiresAt: session.qrExpiresAt,
-    roomCode: session.roomCode,
-    roomCodeExpiresAt: session.roomCodeExpiresAt,
-    activatedAt: session.activatedAt,
-    closedAt: session.closedAt,
-    notes: session.notes,
+    qrToken: session.qrToken ?? null,
+    qrExpiresAt: session.qrExpiresAt ?? null,
+    roomCode: session.roomCode ?? null,
+    roomCodeExpiresAt: session.roomCodeExpiresAt ?? null,
+    activatedAt: session.activatedAt ?? null,
+    closedAt: session.closedAt ?? null,
+    notes: session.notes ?? '',
     createdAt: session.createdAt,
     updatedAt: session.updatedAt,
   };

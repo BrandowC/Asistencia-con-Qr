@@ -16,7 +16,6 @@
     "removeComments": false,
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
-    "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "verbatimModuleSyntax": false
   },
