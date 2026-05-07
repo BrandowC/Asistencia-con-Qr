@@ -10,6 +10,8 @@ import institutionsRoutes from './routes/institutions.routes.js';
 import unitsRoutes from './routes/units.routes.js';
 import sessionsRoutes from './routes/sessions.routes.js';
 import publicRoutes from './routes/public.routes.js';
+import peopleRoutes from './routes/people.routes.js';
+import enrollmentsRoutes from './routes/enrollments.routes.js';
 
 export function buildApp(): Express {
   const app = express();
@@ -39,6 +41,8 @@ export function buildApp(): Express {
   app.use('/api/auth', authRoutes);
   app.use('/api/institutions', institutionsRoutes);
   app.use('/api/units', unitsRoutes);
+  app.use('/api/people', peopleRoutes);
+  app.use('/api/enrollments', enrollmentsRoutes);
   app.use('/api/sessions', sessionsRoutes);
   app.use('/public', publicRoutes);
 
