@@ -47,6 +47,17 @@ export interface EnrolledPerson {
   documento: string;
   nombre: string;
   matricula?: string | null;
+  enrollmentId?: string | null;
+}
+
+export interface Person {
+  id: string;
+  institutionId: string;
+  documento: string;
+  nombre: string;
+  matricula?: string | null;
+  email?: string | null;
+  roles: string[];
 }
 
 export type SessionStatus = 'DRAFT' | 'ACTIVE' | 'CLOSED' | 'EXPIRED';

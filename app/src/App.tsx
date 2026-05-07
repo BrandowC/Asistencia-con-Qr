@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import PublicAttendancePage from './pages/PublicAttendancePage';
 import SettingsPage from './pages/SettingsPage';
+import ManagePage from './pages/ManagePage';
 import { AuthProvider, useAuth } from './store/auth';
 
 function ProtectedRoute({
@@ -43,6 +44,9 @@ function Routes() {
         </Route>
         <ProtectedRoute path="/dashboard">
           <DashboardPage />
+        </ProtectedRoute>
+        <ProtectedRoute path="/manage">
+          <ManagePage />
         </ProtectedRoute>
         <Route exact path="/">
           <Redirect to="/dashboard" />

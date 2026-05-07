@@ -7,6 +7,7 @@ import type {
   AuthResponse,
   EnrolledPerson,
   Institution,
+  Person,
   PresentRecord,
   RejectionRecord,
 } from './types';
@@ -113,4 +114,81 @@ export const api = {
         body: JSON.stringify({ documento }),
       },
     ),
+
+  createInstitution: (input: {
+    code: string;
+    name: string;
+    context: 'SENA' | 'UNIVERSIDAD';
+    labels?: { formador?: string; aprendiz?: string; unidad?: string };
+    theme?: { primary?: string; secondary?: string };
+  }) =>
+    request<Institution>('/api/institutions', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+
+  deleteInstitution: (id: string) =>
+    request<{ id: string; active: boolean }>(`/api/institutions/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }),
+
+  createUnit: (input: {
+    institutionId: string;
+    code: string;
+    name: string;
+    type: 'FICHA' | 'MATERIA';
+    description?: string;
+  }) =>
+    request<AcademicUnit>('/api/units', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+
+  deleteUnit: (id: string) =>
+    request<{ id: string; active: boolean }>(`/api/units/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }),
+
+  getPeople: (params: { institutionId?: string; role?: string; q?: string } = {}) => {
+    const sp = new URLSearchParams();
+    if (params.institutionId) sp.set('institutionId', params.institutionId);
+    if (params.role) sp.set('role', params.role);
+    if (params.q) sp.set('q', params.q);
+    const qs = sp.toString();
+    return request<Person[]>(`/api/people${qs ? `?${qs}` : ''}`);
+  },
+
+  createPerson: (input: {
+    institutionId: string;
+    documento: string;
+    nombre: string;
+    matricula?: string | null;
+    email?: string | null;
+    password?: string;
+    roles: string[];
+    unitIds?: string[];
+  }) =>
+    request<Person>('/api/people', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+
+  deletePerson: (id: string) =>
+    request<{ id: string; active: boolean }>(`/api/people/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }),
+
+  enroll: (unitId: string, personId: string) =>
+    request<{ id: string; unitId: string; personId: string; active: boolean }>(
+      '/api/enrollments',
+      {
+        method: 'POST',
+        body: JSON.stringify({ unitId, personId }),
+      },
+    ),
+
+  unenroll: (enrollmentId: string) =>
+    request<{ id: string; active: boolean }>(`/api/enrollments/${encodeURIComponent(enrollmentId)}`, {
+      method: 'DELETE',
+    }),
 };
